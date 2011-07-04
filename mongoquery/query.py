@@ -1,8 +1,26 @@
 import pymongo
 import itertools
 
-__all__ = ['Query', 'Result']
+__all__ = ['Query', 'Result', 'QueryError']
 
+class QueryError(Exception):
+    """a Query Error occurred"""
+
+    def __init__(self, code, msg, query = None):
+        """initialize the Query Error.
+
+        :param code: The error code, a lowercase string without spaces
+        :param msg: The in depth error description
+        :param query: The ``Query`` instance which produced the error
+        """
+
+        self.code = code
+        self.msg = msg
+        self.query = query
+
+    def __repr__(self):
+        """return the string representation"""
+        return u"""<QueryError code=%s, msg='%s'>""" %(self.code, self.msg)
 
 class Query(object):
     """a MongoDB query object"""
@@ -23,6 +41,7 @@ class Query(object):
         # are in place
         self._complete = True 
         self._cls = None
+        self._coll = None
 
     def sort(self, *args, **kwargs):
         self._sort = (args, kwargs)
@@ -47,8 +66,17 @@ class Query(object):
         self._cls = cls
         return self
 
-    def __call__(self, collection):
+    def coll(self, collection):
+        """set the collection to use for the query in front"""
+        self._coll = collection
+        return self
+
+    def __call__(self, collection = None):
         """call the Query on a collection and return a ``Result`` instance"""
+        if collection is None:
+            collection = self._coll
+        if collection is None:
+            raise QueryError("no_collection", "no collection for the Query was either given in the Query object or via the call", self)
         res = collection.find(self.query, **self.kws)
         if self._sort is not None:
             s = self._sort

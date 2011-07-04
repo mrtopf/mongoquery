@@ -1,4 +1,5 @@
-from mongoquery import Query
+from mongoquery import Query, QueryError
+import pytest
 
 def test_basics(db):
     q = Query(a=2)
@@ -59,4 +60,17 @@ def test_cls_iter(db, cls):
     for item in r:
         assert item.g == 3
 
+def test_set_collection(db, cls):
+    q = Query(a=2).coll(db.test)
+    r = q()
+    assert r[0]['b'] == 3
+    assert r.complete
+
+def test_no_set_collection(db, cls):
+    q = Query(a=2)
+    pytest.raises(QueryError, q)
+    try:
+        r = q()
+    except QueryError, e:
+        assert e.code == "no_collection"
 
