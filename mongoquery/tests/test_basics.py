@@ -74,3 +74,21 @@ def test_no_set_collection(db, cls):
     except QueryError, e:
         assert e.code == "no_collection"
 
+def test_call(db, cls):
+
+    # test class for instantiation
+    class A(object):
+
+        def __init__(self, d, e):
+            self.d = d
+            self.e = e
+
+    def f(d, e=None, *args, **kwargs):
+        return A(d,e)
+
+    q = Query().coll(db.test).call(f, e=14)
+    r = q()
+    for item in r:
+        assert isinstance(item, A)
+        assert item.e == 14
+
