@@ -45,6 +45,11 @@ class Query(object):
         self._coll = None
         self._func = None
 
+    def update(self, **query):
+        """add more query elements"""
+        self.query.update(query)
+        return self
+
     def sort(self, *args, **kwargs):
         self._sort = (args, kwargs)
         return self
