@@ -121,6 +121,10 @@ class Result(object):
         doc = self.cursor[a]
         if self.cls is not None:
             return self.cls(doc)
+        elif self.query._func is not None:
+            f, args, kwargs = self.query._func
+            filter_func = functools.partial(f, *args, **kwargs)
+            return filter_func(doc)
         return doc
 
     def __iter__(self, *args, **kwargs):
