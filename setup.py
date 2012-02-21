@@ -19,6 +19,7 @@ setup(name='mongoquery',
       zip_safe=False,
       install_requires=[
         "pymongo",
+        "colander",
       ],
       entry_points="""
       """,
