@@ -179,6 +179,10 @@ class Collection(object):
 
     __getitem__ = get
 
+    def delete(self, _id):
+        """delete an object"""
+        self.collection.remove({'_id' : _id})
+
     @property
     def all(self):
         """return all objects"""
