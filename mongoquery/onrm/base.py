@@ -3,7 +3,7 @@ import colander
 import uuid
 import mongoquery
 
-__all__ = ['AttributeMapper', 'Record', 'Collection', 'Error', 'InvalidData', 'ObjectNotFound', 'DateTime']
+__all__ = ['AttributeMapper', 'Record', 'Collection', 'Error', 'InvalidData', 'ObjectNotFound', 'DateTime', 'AnyData']
 
 class AttributeMapper(dict):
     """a dictionary like object which also is accessible via getattr/setattr"""
@@ -30,6 +30,20 @@ class AttributeMapper(dict):
         d = copy.deepcopy(self) 
         return AttributeMapper(d)
 
+class AnyData(colander.SchemaType):
+    """this simply preserves any data in the field. This is useful for e.g. metadata dictionaries which
+    are not defined beforehand and can contain arbitrary data"""
+
+    def serialize(self, node, appstruct):
+        if appstruct is colander:
+            return colander
+        return appstruct
+
+    def deserialize(self, node, cstruct):
+        if not cstruct:
+            return colander.null
+        return cstruct
+
 class DateTime(colander.SchemaType):
     """our own date time type which does not serialize to a string but keeps the datetime for mongo"""
 
@@ -40,11 +54,10 @@ class DateTime(colander.SchemaType):
             return colander
 
         if not isinstance(appstruct, datetime.datetime):
-            raise colande.Invalid(node,
+            raise colander.Invalid(node,
                           _('"${val}" is not a datetime object',
                             mapping={'val':appstruct})
                           )
-
         return appstruct
 
     def deserialize(self, node, cstruct):
@@ -91,7 +104,7 @@ class Record(object):
         self._id = self.d.get("_id", None)
         self.collection = collection
         self.from_db = from_db
-        if not self.exists:
+        if not self.from_db:
             # initialize this object
             self.initialize()
 
