@@ -72,7 +72,11 @@ class InvalidData(Error):
     """exception raised if the data is invalid on serialize"""
 
     def __init__(self, errors):
-        """initialize the exception"""
+        """initialize the exception.
+
+        :param errors: A dictionary containing the field names associated with messages
+        
+        """
         self.errors = errors
 
     def __str__(self):
@@ -114,8 +118,12 @@ class Record(object):
 
     @property
     def exists(self):
-        """check if this is an existing object, meaning if it has an _id attached"""
-        return self.d.get('_id') is not None
+        """check if this is an existing object, meaning if it is coming from the database
+
+        TODO: make this deprecated as we already have from_db
+        
+        """
+        return self.from_db
 
     def initialize(self):
         """initialize this object. This method is called when it's a new object meaning
@@ -123,7 +131,7 @@ class Record(object):
         pass
 
     def serialize(self):
-        """serialize the data into a structure"""
+        """serialize the data into a structure in order to store it in the database"""
 
         # check if data is valid (strangely we need to call colander's deserialize()
         # because otherwise it would make strings out of everything
@@ -177,10 +185,15 @@ class Collection(object):
         """store an object"""
         # TODO: handle automatically generated objectids
         data = obj.serialize()
+        data = self.on_put(obj, data) # hook for handling additional validation etc.
         self.collection.save(data, True)
         obj.d = AttributeMapper(data)
         obj.from_db = True
         return obj
+
+    def on_put(self, obj, data):
+        """hook for handling additional validation etc."""
+        return data
 
     def get(self, _id):
         """return an object by it's id"""
