@@ -142,7 +142,7 @@ class Record(object):
             raise InvalidData(e.asdict())
 
         # now check if we have an _id and if not create one
-        if not self.exists and self.create_id:
+        if self.create_id and not "_id" in self.d:
             data['_id'] = self.gen_id()
         else:
             data['_id'] = self.d.get("_id")
