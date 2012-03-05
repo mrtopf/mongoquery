@@ -188,6 +188,7 @@ class Collection(object):
         data = self.on_put(obj, data) # hook for handling additional validation etc.
         self.collection.save(data, True)
         obj.d = AttributeMapper(data)
+        obj.collection = self
         obj.from_db = True
         return obj
 
