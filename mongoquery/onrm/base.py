@@ -208,7 +208,12 @@ class Collection(object):
 
     def delete(self, _id):
         """delete an object"""
+        self.on_delete(_id)
         self.collection.remove({'_id' : _id})
+
+    def on_delete(self, _id):
+        """hook for doing something before the actual deleting happens"""
+        pass
 
     @property
     def all(self):
