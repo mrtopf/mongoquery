@@ -2,6 +2,7 @@ import pymongo
 import colander
 import uuid
 import mongoquery
+import datetime
 
 __all__ = ['AttributeMapper', 'Record', 'Collection', 'Error', 'InvalidData', 'ObjectNotFound', 'DateTime', 'AnyData']
 
@@ -49,13 +50,17 @@ class DateTime(colander.SchemaType):
 
     err_template =  colander._('Invalid date')
 
+    def __init__(self, default = colander.null):
+        """initialize the DateTime type with a default"""
+        self.default = default
+
     def serialize(self, node, appstruct):
-        if appstruct is colander:
-            return colander
+        if not appstruct:
+            return self.default
 
         if not isinstance(appstruct, datetime.datetime):
             raise colander.Invalid(node,
-                          _('"${val}" is not a datetime object',
+                          colander._('"${val}" is not a datetime object',
                             mapping={'val':appstruct})
                           )
         return appstruct
@@ -168,6 +173,7 @@ class Record(object):
     def deserialize(cls, data, collection = None):
         """create a new instance of this class"""
         data = cls.on_deserialize(data)
+        data = cls.schema.serialize(data)
         return cls(data, from_db=True, collection = collection)
         
 
