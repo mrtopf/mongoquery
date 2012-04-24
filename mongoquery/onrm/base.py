@@ -138,6 +138,10 @@ class Record(object):
     def serialize(self):
         """serialize the data into a structure in order to store it in the database"""
 
+        # first check if we have an _id and if not create one
+        if self.create_id and not "_id" in self.d:
+            self.d._id = self.gen_id()
+
         # check if data is valid (strangely we need to call colander's deserialize()
         # because otherwise it would make strings out of everything
         # we only want the validators though
@@ -146,11 +150,6 @@ class Record(object):
         except colander.Invalid, e:
             raise InvalidData(e.asdict())
 
-        # now check if we have an _id and if not create one
-        if self.create_id and not "_id" in self.d:
-            data['_id'] = self.gen_id()
-        else:
-            data['_id'] = self.d.get("_id")
 
         return self.on_serialize(data)
 
