@@ -172,7 +172,8 @@ class Record(object):
     def deserialize(cls, data, collection = None):
         """create a new instance of this class"""
         data = cls.on_deserialize(data)
-        data = cls.schema.serialize(data)
+        if collection.process_from_db:
+            data = cls.schema.serialize(data)
         return cls(data, from_db=True, collection = collection)
         
 
@@ -181,10 +182,11 @@ class Collection(object):
     data_class = None
     use_objectids = False # does the mongodb collection use object ids?
 
-    def __init__(self, collection, config = {}):
+    def __init__(self, collection, config = {}, process_from_db = False):
         """initialize the collection"""
         self.collection = collection
         self.config = config
+        self.process_from_db = process_from_db
 
     def put(self, obj):
         """store an object"""
