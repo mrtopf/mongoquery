@@ -138,24 +138,34 @@ class Record(object):
     def serialize(self):
         """serialize the data into a structure in order to store it in the database"""
 
+
         # first check if we have an _id and if not create one
         if self.create_id and not "_id" in self.d:
             self.d._id = self.gen_id()
+
+        data = self.before_serialize(self.d)
 
         # check if data is valid (strangely we need to call colander's deserialize()
         # because otherwise it would make strings out of everything
         # we only want the validators though
         try:
-            data = self.schema.deserialize(self.d)
+            data = self.schema.deserialize(data)
         except colander.Invalid, e:
             raise InvalidData(e.asdict())
-
 
         return self.on_serialize(data)
 
     def on_serialize(self, data):
-        """hook for adding your own serialize processing which is when it's put into the database"""
+        """hook for adding your own serialize processing which is when it's put into the database. This is called after serialization"""
         return data
+
+    def before_serialize(self, data):
+        """hook for changing data before it is serialized"""
+        return data
+
+    def after_deserialize(self):
+        """hook for changing data after the object from the database has been instantiated"""
+        pass
 
     @classmethod
     def on_deserialize(cls, d):
@@ -174,7 +184,10 @@ class Record(object):
         data = cls.on_deserialize(data)
         if collection.process_from_db:
             data = cls.schema.serialize(data)
-        return cls(data, from_db=True, collection = collection)
+        instance = cls(data, from_db=True, collection = collection)
+        instance.after_deserialize()
+        return instance
+
         
 
 class Collection(object):
