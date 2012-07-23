@@ -138,11 +138,6 @@ class Record(object):
     def serialize(self):
         """serialize the data into a structure in order to store it in the database"""
 
-
-        # first check if we have an _id and if not create one
-        if self.create_id and not "_id" in self.d:
-            self.d._id = self.gen_id()
-
         data = self.before_serialize(self.d)
 
         # check if data is valid (strangely we need to call colander's deserialize()
@@ -152,6 +147,10 @@ class Record(object):
             data = self.schema.deserialize(data)
         except colander.Invalid, e:
             raise InvalidData(e.asdict())
+
+        # now check if we have an _id and if not create one
+        if self.create_id and "_id" not in data:
+            data['_id'] = self.gen_id()
 
         return self.on_serialize(data)
 
