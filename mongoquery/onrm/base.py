@@ -209,11 +209,17 @@ class Collection(object):
         obj.d = AttributeMapper(data)
         obj.collection = self
         obj.from_db = True
+        self.after_put(obj)
         return obj
 
     def on_put(self, obj, data):
         """hook for handling additional validation etc."""
         return data
+
+    def after_put(self):
+        """hook for changing data after the object from the database has been instantiated"""
+        pass
+
 
     def get(self, _id):
         """return an object by it's id"""
