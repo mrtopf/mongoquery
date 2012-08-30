@@ -216,7 +216,7 @@ class Collection(object):
         """hook for handling additional validation etc."""
         return data
 
-    def after_put(self):
+    def after_put(self, obj):
         """hook for changing data after the object from the database has been instantiated"""
         pass
 
