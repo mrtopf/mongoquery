@@ -149,7 +149,7 @@ class Record(object):
             raise InvalidData(e.asdict())
 
         # now check if we have an _id and if not create one
-        if self.create_id and "_id" not in data:
+        if self.create_id and ("_id" not in data or data['_id']==""):
             data['_id'] = self.gen_id()
 
         return self.on_serialize(data)
@@ -220,13 +220,11 @@ class Collection(object):
         """hook for changing data after the object from the database has been instantiated"""
         pass
 
-
     def get(self, _id):
         """return an object by it's id"""
         data = self.collection.find_one({'_id' : _id})
         if data is None:
             raise ObjectNotFound(_id)
-
         return self.data_class.deserialize(data, collection=self)
 
     __getitem__ = get
